@@ -1,0 +1,25 @@
+{
+  "name": "cryptoview-frontend",
+  "version": "1.0.0",
+  "description": "Crypto dashboard with real-time prices, charts and currency converter",
+  "main": "index.html",
+  "scripts": {
+    "start": "npx serve .",
+    "dev": "npx live-server --port=3000",
+    "lint": "npx eslint js/"
+  },
+  "keywords": [
+    "crypto",
+    "dashboard",
+    "cryptocurrency",
+    "coingecko",
+    "charts"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "eslint": "^8.57.0",
+    "live-server": "^1.2.2",
+    "serve": "^14.2.1"
+  }
+}

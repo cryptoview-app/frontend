@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CryptoView — Конвертер</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<nav>
+  <div class="logo">CRYPTO<span>VIEW</span></div>
+  <div class="nav-tabs">
+    <a class="nav-tab" href="index.html">📊 Рынок</a>
+    <a class="nav-tab" href="detail.html">🔍 Монета</a>
+    <a class="nav-tab active" href="converter.html">💱 Конвертер</a>
+  </div>
+  <button class="refresh-btn" onclick="loadPage()">⟳ обновить</button>
+</nav>
+
+<div class="ticker-bar">
+  <div class="ticker-inner" id="ticker">
+    <span class="ticker-item" style="color:var(--muted)">Загрузка...</span>
+  </div>
+</div>
+
+<div class="page-wrap">
+  <div class="page-header">
+    <div class="page-title">// КОНВЕРТЕР</div>
+    <div class="page-subtitle">курсы обновляются в реальном времени</div>
+  </div>
+
+  <div class="conv-grid">
+    <!-- LEFT: converter -->
+    <div class="conv-card">
+      <div class="conv-label">Из</div>
+      <div class="conv-row">
+        <input class="conv-input" type="number" id="conv-amount" value="1" min="0" oninput="calcConvert()">
+        <select class="conv-select" id="conv-from" onchange="calcConvert()">
+          <option value="btc">₿ Bitcoin</option>
+          <option value="eth">Ξ Ethereum</option>
+          <option value="usdt">$ Tether</option>
+          <option value="bnb">B Binance</option>
+          <option value="sol">◎ Solana</option>
+          <option value="xrp">✕ XRP</option>
+        </select>
+      </div>
+
+      <div style="display:flex;justify-content:center">
+        <button class="swap-btn" onclick="swapCurrencies()" title="поменять местами">⇅</button>
+      </div>
+
+      <div class="conv-label">В</div>
+      <div class="conv-row">
+        <select class="conv-select" id="conv-to" onchange="calcConvert()" style="width:100%">
+          <option value="usd">🇺🇸 USD</option>
+          <option value="eur">🇪🇺 EUR</option>
+          <option value="rub">🇷🇺 RUB</option>
+          <option value="gbp">🇬🇧 GBP</option>
+          <option value="jpy">🇯🇵 JPY</option>
+          <option value="btc">₿ Bitcoin</option>
+          <option value="eth">Ξ Ethereum</option>
+        </select>
+      </div>
+
+      <div class="conv-result">
+        <div class="conv-result-label" id="conv-result-label">Результат</div>
+        <div class="conv-result-val" id="conv-result">—</div>
+      </div>
+    </div>
+
+    <!-- RIGHT: reference rates -->
+    <div class="conv-card">
+      <h3 style="font-size:.75rem;color:var(--muted);letter-spacing:.5px;text-transform:uppercase;margin-bottom:1rem">Справочный курс</h3>
+      <div class="conv-rates" id="conv-rates-list">
+        <div style="color:var(--muted);font-size:.8rem">Загрузка...</div>
+      </div>
+
+      <div style="margin-top:1.5rem;border-top:1px solid var(--border);padding-top:1rem">
+        <h3 style="font-size:.75rem;color:var(--muted);letter-spacing:.5px;text-transform:uppercase;margin-bottom:.8rem">Фиатные курсы (к USD)</h3>
+        <div class="conv-rates">
+          <div class="conv-rate-row"><span style="color:var(--muted)">EUR</span><span class="num-mono">0.92</span></div>
+          <div class="conv-rate-row"><span style="color:var(--muted)">RUB</span><span class="num-mono">87.50</span></div>
+          <div class="conv-rate-row"><span style="color:var(--muted)">GBP</span><span class="num-mono">0.79</span></div>
+          <div class="conv-rate-row"><span style="color:var(--muted)">JPY</span><span class="num-mono">149.50</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="js/app.js"></script>
+<script>
+async function loadPage(){
+  try {
+    const coins = await fetchMarket();
+    updatePriceCache(coins);
+    buildTicker(coins);
+    updateConverterRates();
+    calcConvert();
+  } catch(e){
+    console.error('Ошибка загрузки курсов:', e);
+  }
+}
+
+loadPage();
+</script>
+</body>
+</html>

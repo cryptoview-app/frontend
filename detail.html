@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CryptoView — Монета</title>
+  <link rel="stylesheet" href="css/style.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+</head>
+<body>
+
+<nav>
+  <div class="logo">CRYPTO<span>VIEW</span></div>
+  <div class="nav-tabs">
+    <a class="nav-tab" href="index.html">📊 Рынок</a>
+    <a class="nav-tab active" href="detail.html">🔍 Монета</a>
+    <a class="nav-tab" href="converter.html">💱 Конвертер</a>
+  </div>
+  <button class="refresh-btn" onclick="loadCoin(currentId,true)">⟳ обновить</button>
+</nav>
+
+<div class="ticker-bar">
+  <div class="ticker-inner" id="ticker">
+    <span class="ticker-item" style="color:var(--muted)">Загрузка...</span>
+  </div>
+</div>
+
+<div class="page-wrap">
+  <a class="back-btn" href="index.html">← назад к рынку</a>
+  <div id="detail-content">
+    <div class="loading-state">⌛ загрузка данных монеты...</div>
+  </div>
+</div>
+
+<script src="js/app.js"></script>
+<script>
+let currentId = new URLSearchParams(location.search).get('id') || 'bitcoin';
+let priceChart = null;
+
+async function loadCoin(id, reload=false){
+  currentId = id;
+  if(reload) document.getElementById('detail-content').innerHTML = '<div class="loading-state">⌛ обновление...</div>';
+  try {
+    const [coins, coinData] = await Promise.all([
+      fetchMarket(),
+      fetch(`https://api.coingecko.com/api/v3/coins/${id}?localization=false&tickers=false&community_data=false&developer_data=false`).then(r=>r.json())
+    ]);
+    updatePriceCache(coins);
+    buildTicker(coins);
+    renderDetail(coinData);
+    loadChart(id, 1);
+  } catch(e){
+    document.getElementById('detail-content').innerHTML =
+      `<div class="error-state">⚠ Не удалось загрузить данные монеты.<br><small>${e.message}</small></div>`;
+  }
+}
+
+function renderDetail(c){
+  const icon  = ICONS[c.id]||ICON_DEFAULT;
+  const price = c.market_data?.current_price?.usd;
+  const p24   = c.market_data?.price_change_percentage_24h;
+  const cap   = c.market_data?.market_cap?.usd;
+  const vol   = c.market_data?.total_volume?.usd;
+  const high  = c.market_data?.high_24h?.usd;
+  const low   = c.market_data?.low_24h?.usd;
+  const circ  = c.market_data?.circulating_supply;
+  const ath   = c.market_data?.ath?.usd;
+
+  document.title = `CryptoView — ${c.name}`;
+  document.getElementById('detail-content').innerHTML = `
+    <div class="detail-header">
+      <div class="detail-icon">${icon}</div>
+      <div>
+        <div class="detail-name">${c.name}</div>
+        <div class="detail-sym">${c.symbol?.toUpperCase()} · #${c.market_cap_rank||'—'}</div>
+      </div>
+      <div style="margin-left:auto;text-align:right">
+        <div class="detail-price">${fmtPrice(price)}</div>
+        <div style="margin-top:4px">${pctHtml(p24)} за 24ч</div>
+      </div>
+    </div>
+
+    <div class="detail-grid">
+      <div class="info-card"><div class="stat-label">Рыночная капитализация</div><div class="num-mono" style="font-size:1.1rem;margin-top:4px">$${fmt(cap)}</div></div>
+      <div class="info-card"><div class="stat-label">Объём торгов (24ч)</div><div class="num-mono" style="font-size:1.1rem;margin-top:4px">$${fmt(vol)}</div></div>
+      <div class="info-card"><div class="stat-label">Максимум за 24ч</div><div class="num-mono" style="font-size:1.1rem;margin-top:4px;color:var(--green)">${fmtPrice(high)}</div></div>
+      <div class="info-card"><div class="stat-label">Минимум за 24ч</div><div class="num-mono" style="font-size:1.1rem;margin-top:4px;color:var(--red)">${fmtPrice(low)}</div></div>
+      <div class="info-card"><div class="stat-label">Оборотное предложение</div><div class="num-mono" style="font-size:1.1rem;margin-top:4px">${fmt(circ)} ${c.symbol?.toUpperCase()}</div></div>
+      <div class="info-card"><div class="stat-label">ATH (исторический макс)</div><div class="num-mono" style="font-size:1.1rem;margin-top:4px;color:var(--gold)">${fmtPrice(ath)}</div></div>
+    </div>
+
+    <div class="chart-card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
+        <h3>История цены</h3>
+        <div class="period-btns">
+          <button class="period-btn active" onclick="loadChart('${c.id}',1,this)">1Д</button>
+          <button class="period-btn" onclick="loadChart('${c.id}',7,this)">7Д</button>
+          <button class="period-btn" onclick="loadChart('${c.id}',30,this)">30Д</button>
+          <button class="period-btn" onclick="loadChart('${c.id}',90,this)">90Д</button>
+        </div>
+      </div>
+      <div style="position:relative;height:280px">
+        <canvas id="priceChart" role="img" aria-label="График цены ${c.name}">История цены ${c.name}</canvas>
+      </div>
+    </div>
+
+    ${c.description?.en ? `
+    <div class="info-card" style="margin-top:1rem">
+      <div class="stat-label" style="margin-bottom:.6rem">О монете</div>
+      <p style="font-size:.85rem;color:var(--muted);line-height:1.6">${c.description.en.replace(/<[^>]*>/g,'').slice(0,400)}...</p>
+    </div>` : ''}`;
+}
+
+async function loadChart(id, days, btn){
+  document.querySelectorAll('.period-btn').forEach(b=>b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  try {
+    const d = await fetchChart(id, days);
+    const prices = d.prices;
+    const step   = Math.max(1,Math.floor(prices.length/50));
+    const labels = prices.filter((_,i)=>i%step===0).map(p=>{
+      const dt = new Date(p[0]);
+      return days<=1
+        ? dt.toLocaleTimeString('ru',{hour:'2-digit',minute:'2-digit'})
+        : dt.toLocaleDateString('ru',{day:'2-digit',month:'2-digit'});
+    });
+    const data   = prices.filter((_,i)=>i%step===0).map(p=>p[1]);
+    const isUp   = data[data.length-1] >= data[0];
+    const color  = isUp ? '#10b981' : '#f43f5e';
+
+    const ctx = document.getElementById('priceChart')?.getContext('2d');
+    if(!ctx) return;
+    if(priceChart) priceChart.destroy();
+    priceChart = new Chart(ctx,{
+      type:'line',
+      data:{
+        labels,
+        datasets:[{data,borderColor:color,borderWidth:2,pointRadius:0,fill:true,
+          backgroundColor: isUp?'rgba(16,185,129,.08)':'rgba(244,63,94,.08)',tension:.3}]
+      },
+      options:{
+        responsive:true,maintainAspectRatio:false,
+        plugins:{legend:{display:false},tooltip:{
+          backgroundColor:'#141d2e',borderColor:'#1e2d45',borderWidth:1,
+          titleColor:'#64748b',bodyColor:'#e2e8f0',
+          callbacks:{label:ctx=>'$'+ctx.raw.toFixed(2)}
+        }},
+        scales:{
+          x:{grid:{color:'rgba(30,45,69,.5)'},ticks:{color:'#64748b',font:{size:10},maxTicksLimit:8}},
+          y:{grid:{color:'rgba(30,45,69,.5)'},ticks:{color:'#64748b',font:{size:10},callback:v=>'$'+fmt(v)},position:'right'}
+        }
+      }
+    });
+  } catch(e){
+    const wrap = document.getElementById('priceChart')?.parentElement;
+    if(wrap) wrap.innerHTML = '<div style="color:var(--muted);font-size:.85rem;padding:2rem;text-align:center">Не удалось загрузить график</div>';
+  }
+}
+
+loadCoin(currentId);
+</script>
+</body>
+</html>

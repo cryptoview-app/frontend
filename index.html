@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CryptoView — Рынок</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<nav>
+  <div class="logo">CRYPTO<span>VIEW</span></div>
+  <div class="nav-tabs">
+    <a class="nav-tab active" href="index.html">📊 Рынок</a>
+    <a class="nav-tab" href="detail.html">🔍 Монета</a>
+    <a class="nav-tab" href="converter.html">💱 Конвертер</a>
+  </div>
+  <button class="refresh-btn" onclick="loadPage()">⟳ обновить</button>
+</nav>
+
+<div class="ticker-bar">
+  <div class="ticker-inner" id="ticker">
+    <span class="ticker-item" style="color:var(--muted)">Загрузка данных...</span>
+  </div>
+</div>
+
+<div class="page-wrap">
+  <div class="page-header">
+    <div class="page-title">// РЫНОК</div>
+    <div class="page-subtitle" id="updated-at">обновляется...</div>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat-card"><div class="stat-label">Капитализация</div><div class="stat-val" id="s-cap">—</div></div>
+    <div class="stat-card"><div class="stat-label">Объём 24ч</div><div class="stat-val" id="s-vol">—</div></div>
+    <div class="stat-card"><div class="stat-label">Доля BTC</div><div class="stat-val" id="s-btc">—</div></div>
+    <div class="stat-card"><div class="stat-label">Активных монет</div><div class="stat-val" id="s-coins">—</div></div>
+  </div>
+
+  <div id="table-wrap">
+    <div class="loading-state">⌛ загрузка данных рынка...</div>
+  </div>
+</div>
+
+<script src="js/app.js"></script>
+<script>
+async function loadPage(){
+  try {
+    const [coins, global] = await Promise.all([fetchMarket(), fetchGlobal()]);
+
+    // Global stats
+    const d = global.data;
+    document.getElementById('s-cap').textContent   = d.total_market_cap?.usd   ? '$'+fmt(d.total_market_cap.usd)   : '—';
+    document.getElementById('s-vol').textContent   = d.total_volume?.usd       ? '$'+fmt(d.total_volume.usd)       : '—';
+    document.getElementById('s-btc').textContent   = d.market_cap_percentage?.btc ? d.market_cap_percentage.btc.toFixed(1)+'%' : '—';
+    document.getElementById('s-coins').textContent = d.active_cryptocurrencies  ? d.active_cryptocurrencies.toLocaleString() : '—';
+
+    // Table
+    const rows = coins.map((c,i)=>{
+      const icon = ICONS[c.id]||ICON_DEFAULT;
+      const p24  = c.price_change_percentage_24h;
+      const p7d  = c.price_change_percentage_7d_in_currency;
+      const supPct = c.total_supply ? Math.min(100,(c.circulating_supply/c.total_supply)*100) : 60;
+      const barColor = p24>=0?'var(--green)':'var(--red)';
+      return `<tr onclick="location.href='detail.html?id=${c.id}'">
+        <td><span class="rank-badge">#${c.market_cap_rank||i+1}</span></td>
+        <td><div class="coin-name-cell">
+          <div class="coin-icon">${icon}</div>
+          <div><div class="coin-name">${c.name}</div><div class="coin-sym">${c.symbol.toUpperCase()}</div></div>
+        </div></td>
+        <td class="num-mono">${fmtPrice(c.current_price)}</td>
+        <td>${pctHtml(p24)}</td>
+        <td>${pctHtml(p7d)}</td>
+        <td class="num-mono">$${fmt(c.market_cap)}</td>
+        <td class="num-mono">$${fmt(c.total_volume)}</td>
+        <td><div class="mini-bar"><div class="mini-bar-fill" style="width:${supPct}%;background:${barColor}"></div></div></td>
+      </tr>`;
+    }).join('');
+
+    document.getElementById('table-wrap').innerHTML = `
+      <table class="coin-table">
+        <thead><tr>
+          <th>#</th><th>Монета</th><th>Цена</th><th>24ч %</th><th>7д %</th>
+          <th>Капитализация</th><th>Объём 24ч</th><th>Оборот</th>
+        </tr></thead>
+        <tbody>${rows}</tbody>
+      </table>`;
+
+    updatePriceCache(coins);
+    buildTicker(coins);
+    document.getElementById('updated-at').textContent = 'обновлено: '+new Date().toLocaleTimeString('ru-RU');
+  } catch(e){
+    document.getElementById('table-wrap').innerHTML =
+      `<div class="error-state">⚠ Не удалось загрузить данные. Попробуйте нажать «обновить» через несколько секунд.<br><small>${e.message}</small></div>`;
+  }
+}
+
+loadPage();
+</script>
+</body>
+</html>
