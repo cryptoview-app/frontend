@@ -7,7 +7,7 @@ const PRICES_USD = { btc:0, eth:0, usdt:1, bnb:0, sol:0, xrp:0 };
 const FIAT_RATES  = { usd:1, eur:0.92, rub:87.5, gbp:0.79, jpy:149.5 };
 
 /* ── SESSION CACHE (60 сек) ── */
-const CACHE_TTL = 60 * 1000; // 60 секунд
+const CACHE_TTL = 60 * 1000;
 const _cache = {};
 
 function cacheGet(key){
@@ -21,9 +21,20 @@ function cacheSet(key, data){
   _cache[key] = { ts: Date.now(), data };
 }
 
-/* ── COIN IMAGE ── */
-function coinImgHtml(image, name, size=28){
-  if(image) return `<img src="${image}" width="${size}" height="${size}" style="border-radius:50%;vertical-align:middle;display:block" alt="${name}" onerror="this.style.display='none'">`;
+/* ── LOCAL ICONS ── */
+// Монеты с локальными иконками в папке img/
+const LOCAL_ICONS = new Set([
+  'bitcoin','ethereum','tether','binancecoin','solana',
+  'ripple','dogecoin','cardano','avalanche-2','chainlink',
+  'usd-coin','polkadot','litecoin','tron','shiba-inu',
+  'the-open-network','the-graph','wrapped-bitcoin'
+]);
+
+function coinImgHtml(coinId, apiFallback, name, size=28){
+  const src = LOCAL_ICONS.has(coinId)
+    ? `img/${coinId}.png`
+    : (apiFallback || '');
+  if(src) return `<img src="${src}" width="${size}" height="${size}" style="border-radius:50%;vertical-align:middle;display:block" alt="${name}" onerror="this.src='${apiFallback||''}';this.onerror=null">`;
   return `<span style="font-size:${size*0.6}px;line-height:${size}px">◆</span>`;
 }
 
@@ -56,7 +67,8 @@ function buildTicker(coins){
   const items = [...coins,...coins].map(c=>{
     const p = c.price_change_percentage_24h;
     const cl = p>=0?'var(--green)':'var(--red)';
-    const img = c.image ? `<img src="${c.image}" width="16" height="16" style="border-radius:50%;vertical-align:middle" alt="${c.name}">` : '◆';
+    const src = LOCAL_ICONS.has(c.id) ? `img/${c.id}.png` : (c.image||'');
+    const img = src ? `<img src="${src}" width="16" height="16" style="border-radius:50%;vertical-align:middle" alt="${c.name}" onerror="this.src='${c.image||''}';this.onerror=null">` : '◆';
     return `<span class="ticker-item">${img} <b>${c.symbol.toUpperCase()}</b> ${fmtPrice(c.current_price)} <span style="color:${cl}">${p>=0?'+':''}${p?.toFixed(2)||0}%</span></span>`;
   }).join('');
   const el = document.getElementById('ticker');

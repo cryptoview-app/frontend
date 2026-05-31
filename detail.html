@@ -70,7 +70,7 @@ function renderDetail(c){
   document.getElementById('detail-content').innerHTML = `
     <div class="detail-header">
       <div class="detail-icon" style="background:none;border:none;padding:0">
-        ${coinImgHtml(imgLarge, c.name, 52)}
+        ${coinImgHtml(c.id, imgLarge, c.name, 52)}
       </div>
       <div>
         <div class="detail-name">${c.name}</div>

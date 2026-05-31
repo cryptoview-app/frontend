@@ -62,7 +62,7 @@ async function loadPage(){
       return `<tr onclick="location.href='detail.html?id=${c.id}'">
         <td><span class="rank-badge">#${c.market_cap_rank||i+1}</span></td>
         <td><div class="coin-name-cell">
-          <div class="coin-icon">${coinImgHtml(c.image, c.name, 28)}</div>
+          <div class="coin-icon">${coinImgHtml(c.id, c.image, c.name, 28)}</div>
           <div><div class="coin-name">${c.name}</div><div class="coin-sym">${c.symbol.toUpperCase()}</div></div>
         </div></td>
         <td class="num-mono">${fmtPrice(c.current_price)}</td>
