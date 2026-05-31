@@ -49,7 +49,7 @@ frontend/
 
 ## 🔌 API
 
-Используется публичный [CoinGecko API v3](https://docs.coingecko.com/):
+Используется публичный [CoinGecko API v3] (https://docs.coingecko.com/):
 
 - `GET /coins/markets` — список монет с ценами
 - `GET /global` — глобальная статистика рынка
