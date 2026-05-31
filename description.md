@@ -30,14 +30,14 @@
 
 ## Используемые технологии
 
-| Область | Технологии |
-|---|---|
-| Фронтенд | HTML5, CSS3, JavaScript (Vanilla) |
-| Визуализация | Chart.js |
-| Данные | CoinGecko API (публичный, без ключа) |
-| База данных | PostgreSQL |
-| Инструменты | WebStorm, pgAdmin, Git |
-| Деплой | GitHub Pages |
+| Область      | Технологии                           |
+|--------------|--------------------------------------|
+| Фронтенд     | HTML5, CSS3, JavaScript (Vanilla)    |
+| Визуализация | Chart.js                             |
+| Данные       | CoinGecko API (публичный, без ключа) |
+| База данных  | PostgreSQL                           |
+| Инструменты  | WebStorm, pgAdmin, Git               |
+| Деплой       | GitHub Pages                         |
 
 ---
 

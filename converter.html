@@ -35,8 +35,8 @@
     <div class="conv-card">
       <div class="conv-label">Из</div>
       <div class="conv-row">
-        <input class="conv-input" type="number" id="conv-amount" value="1" min="0" oninput="calcConvert()">
-        <select class="conv-select" id="conv-from" onchange="calcConvert()">
+        <label for="conv-amount"></label><input class="conv-input" type="number" id="conv-amount" value="1" min="0" oninput="calcConvert()">
+        <label for="conv-from"></label><select class="conv-select" id="conv-from" onchange="calcConvert()">
           <option value="btc">₿ Bitcoin</option>
           <option value="eth">Ξ Ethereum</option>
           <option value="usdt">$ Tether</option>
@@ -52,7 +52,7 @@
 
       <div class="conv-label">В</div>
       <div class="conv-row">
-        <select class="conv-select" id="conv-to" onchange="calcConvert()" style="width:100%">
+        <label for="conv-to"></label><select class="conv-select" id="conv-to" onchange="calcConvert()" style="width:100%">
           <option value="usd">🇺🇸 USD</option>
           <option value="eur">🇪🇺 EUR</option>
           <option value="rub">🇷🇺 RUB</option>
@@ -71,13 +71,13 @@
 
     <!-- RIGHT: reference rates -->
     <div class="conv-card">
-      <h3 style="font-size:.75rem;color:var(--muted);letter-spacing:.5px;text-transform:uppercase;margin-bottom:1rem">Справочный курс</h3>
+      <h3 style="font-size:.75rem;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:1rem">Справочный курс</h3>
       <div class="conv-rates" id="conv-rates-list">
         <div style="color:var(--muted);font-size:.8rem">Загрузка...</div>
       </div>
 
       <div style="margin-top:1.5rem;border-top:1px solid var(--border);padding-top:1rem">
-        <h3 style="font-size:.75rem;color:var(--muted);letter-spacing:.5px;text-transform:uppercase;margin-bottom:.8rem">Фиатные курсы (к USD)</h3>
+        <h3 style="font-size:.75rem;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:.8rem">Фиатные курсы (к USD)</h3>
         <div class="conv-rates">
           <div class="conv-rate-row"><span style="color:var(--muted)">EUR</span><span class="num-mono">0.92</span></div>
           <div class="conv-rate-row"><span style="color:var(--muted)">RUB</span><span class="num-mono">87.50</span></div>

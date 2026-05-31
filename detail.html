@@ -48,7 +48,7 @@ async function loadCoin(id, reload=false){
     updatePriceCache(coins);
     buildTicker(coins);
     renderDetail(coinData);
-    loadChart(id, 1);
+    await loadChart(id, 1);
   } catch(e){
     document.getElementById('detail-content').innerHTML =
       `<div class="error-state">⚠ Не удалось загрузить данные монеты.<br><small>${e.message}</small></div>`;
@@ -149,7 +149,7 @@ async function loadChart(id, days, btn){
         }},
         scales:{
           x:{grid:{color:'rgba(30,45,69,.5)'},ticks:{color:'#64748b',font:{size:10},maxTicksLimit:8}},
-          y:{grid:{color:'rgba(30,45,69,.5)'},ticks:{color:'#64748b',font:{size:10},callback:v=>'$'+fmt(v)},position:'right'}
+          y:{grid:{color:'rgba(30,45,69,.5)'},ticks:{color:'#64748b',font:{size:10}},position:'right'}
         }
       }
     });
