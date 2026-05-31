@@ -1,24 +1,12 @@
-# Dependencies
 node_modules/
+package-lock.json
 
-# OS files
-.DS_Store
-Thumbs.db
-
-# Editor
-.vscode/
 .idea/
 *.swp
 *.swo
 
-# Logs
 *.log
 npm-debug.log*
 
-# Local env
 .env
 .env.local
-
-# Build output (если будет сборка)
-dist/
-build/
