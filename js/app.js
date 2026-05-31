@@ -6,6 +6,21 @@
 const PRICES_USD = { btc:0, eth:0, usdt:1, bnb:0, sol:0, xrp:0 };
 const FIAT_RATES  = { usd:1, eur:0.92, rub:87.5, gbp:0.79, jpy:149.5 };
 
+/* ── SESSION CACHE (60 сек) ── */
+const CACHE_TTL = 60 * 1000; // 60 секунд
+const _cache = {};
+
+function cacheGet(key){
+  const entry = _cache[key];
+  if(!entry) return null;
+  if(Date.now() - entry.ts > CACHE_TTL) return null;
+  return entry.data;
+}
+
+function cacheSet(key, data){
+  _cache[key] = { ts: Date.now(), data };
+}
+
 /* ── COIN IMAGE ── */
 function coinImgHtml(image, name, size=28){
   if(image) return `<img src="${image}" width="${size}" height="${size}" style="border-radius:50%;vertical-align:middle;display:block" alt="${name}" onerror="this.style.display='none'">`;
@@ -48,23 +63,44 @@ function buildTicker(coins){
   if(el) el.innerHTML = items;
 }
 
-/* ── MARKET API ── */
-async function fetchMarket(){
+/* ── MARKET API (с кэшем) ── */
+async function fetchMarket(force=false){
+  const key = 'market';
+  if(!force){
+    const cached = cacheGet(key);
+    if(cached) return cached;
+  }
   const r = await fetch('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=20&page=1&sparkline=false&price_change_percentage=1h,24h,7d');
   if(!r.ok) throw new Error('API error '+r.status);
-  return r.json();
+  const data = await r.json();
+  cacheSet(key, data);
+  return data;
 }
 
-async function fetchGlobal(){
+async function fetchGlobal(force=false){
+  const key = 'global';
+  if(!force){
+    const cached = cacheGet(key);
+    if(cached) return cached;
+  }
   const r = await fetch('https://api.coingecko.com/api/v3/global');
   if(!r.ok) throw new Error('API error '+r.status);
-  return r.json();
+  const data = await r.json();
+  cacheSet(key, data);
+  return data;
 }
 
-async function fetchChart(id, days){
+async function fetchChart(id, days, force=false){
+  const key = `chart_${id}_${days}`;
+  if(!force){
+    const cached = cacheGet(key);
+    if(cached) return cached;
+  }
   const r = await fetch(`https://api.coingecko.com/api/v3/coins/${id}/market_chart?vs_currency=usd&days=${days}`);
   if(!r.ok) throw new Error('API error '+r.status);
-  return r.json();
+  const data = await r.json();
+  cacheSet(key, data);
+  return data;
 }
 
 /* ── PRICE CACHE UPDATE ── */
