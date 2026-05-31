@@ -56,7 +56,6 @@ async function loadCoin(id, reload=false){
 }
 
 function renderDetail(c){
-  const icon  = ICONS[c.id]||ICON_DEFAULT;
   const price = c.market_data?.current_price?.usd;
   const p24   = c.market_data?.price_change_percentage_24h;
   const cap   = c.market_data?.market_cap?.usd;
@@ -65,11 +64,14 @@ function renderDetail(c){
   const low   = c.market_data?.low_24h?.usd;
   const circ  = c.market_data?.circulating_supply;
   const ath   = c.market_data?.ath?.usd;
+  const imgLarge = c.image?.large;
 
   document.title = `CryptoView — ${c.name}`;
   document.getElementById('detail-content').innerHTML = `
     <div class="detail-header">
-      <div class="detail-icon">${icon}</div>
+      <div class="detail-icon" style="background:none;border:none;padding:0">
+        ${coinImgHtml(imgLarge, c.name, 52)}
+      </div>
       <div>
         <div class="detail-name">${c.name}</div>
         <div class="detail-sym">${c.symbol?.toUpperCase()} · #${c.market_cap_rank||'—'}</div>
@@ -100,7 +102,7 @@ function renderDetail(c){
         </div>
       </div>
       <div style="position:relative;height:280px">
-        <canvas id="priceChart" role="img" aria-label="График цены ${c.name}">История цены ${c.name}</canvas>
+        <canvas id="priceChart" role="img" aria-label="График цены ${c.name}"></canvas>
       </div>
     </div>
 

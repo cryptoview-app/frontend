@@ -2,17 +2,15 @@
    CryptoView — Main Application Logic
    ============================================= */
 
-const ICONS = {
-  bitcoin:'₿', ethereum:'Ξ', tether:'$', binancecoin:'B',
-  solana:'◎', ripple:'✕', 'usd-coin':'◌', dogecoin:'Ð',
-  cardano:'₳', avalanche:'▲', 'shiba-inu':'🐕', polkadot:'●',
-  chainlink:'⬡', 'bitcoin-cash':'₿', litecoin:'Ł', tron:'⟁'
-};
-const ICON_DEFAULT = '◆';
-
 // Prices cache (populated after fetch)
 const PRICES_USD = { btc:0, eth:0, usdt:1, bnb:0, sol:0, xrp:0 };
 const FIAT_RATES  = { usd:1, eur:0.92, rub:87.5, gbp:0.79, jpy:149.5 };
+
+/* ── COIN IMAGE ── */
+function coinImgHtml(image, name, size=28){
+  if(image) return `<img src="${image}" width="${size}" height="${size}" style="border-radius:50%;vertical-align:middle;display:block" alt="${name}" onerror="this.style.display='none'">`;
+  return `<span style="font-size:${size*0.6}px;line-height:${size}px">◆</span>`;
+}
 
 /* ── FORMATTERS ── */
 function fmt(n, dec=2){
@@ -41,10 +39,10 @@ function pctHtml(n){
 /* ── TICKER ── */
 function buildTicker(coins){
   const items = [...coins,...coins].map(c=>{
-    const icon = ICONS[c.id]||ICON_DEFAULT;
     const p = c.price_change_percentage_24h;
     const cl = p>=0?'var(--green)':'var(--red)';
-    return `<span class="ticker-item">${icon} <b>${c.symbol.toUpperCase()}</b> ${fmtPrice(c.current_price)} <span style="color:${cl}">${p>=0?'+':''}${p?.toFixed(2)||0}%</span></span>`;
+    const img = c.image ? `<img src="${c.image}" width="16" height="16" style="border-radius:50%;vertical-align:middle" alt="${c.name}">` : '◆';
+    return `<span class="ticker-item">${img} <b>${c.symbol.toUpperCase()}</b> ${fmtPrice(c.current_price)} <span style="color:${cl}">${p>=0?'+':''}${p?.toFixed(2)||0}%</span></span>`;
   }).join('');
   const el = document.getElementById('ticker');
   if(el) el.innerHTML = items;
